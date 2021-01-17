@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="survey_question_form_view" model="ir.ui.view">
+            <field name="name">survey.question.form.view</field>
+            <field name="model">survey.question</field>
+            <field name="inherit_id" ref="survey.survey_question_form" />
+            <field name="arch" type="xml">
+                <field name="type" position="after">
+                    <field name="model_id" attrs="{'invisible': [('type', '!=', 'm2o')], 'required': [('type', '=', 'm2o')]}" options="{'no_create_edit': 1}"/>
+                </field>
+
+                <field name="constr_mandatory" position="after">
+                    <field name="show_sign" attrs="{'invisible': [('type','!=','sign')]}"/>
+                </field>
+
+                <xpath expr="//notebook/page[2]/group/div[1]" position="attributes">
+                    <attribute name="attrs">
+                        {'invisible': [('type', 'not in', ['lang', 'textbox', 'numerical_box', 'datetime'])]}
+                    </attribute>
+                </xpath>
+
+                <field name="validation_required" position="attributes">
+                    <attribute name="attrs">
+                        {'invisible': ['|',
+                                ('validation_type', '!=', 'phone'),
+                                ('type', '!=', 'textbox')
+                            ]
+                        }
+                    </attribute>
+                </field>
+
+                <label for="validation_email" position="after">
+                    <group>
+                        <group>
+                            <field name="validation_type" attrs="{'invisible': [('type', '!=', 'textbox')]}" />
+                        </group>
+                        <group></group>
+                    </group>
+                </label>
+                <field name="validation_email" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+                <label for="validation_email" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </label>
+
+            </field>
+        </record>
+
+        <record id="survey_user_input_line_form_inherited" model="ir.ui.view">
+            <field name="name">survey.user_input_line.form.view</field>
+            <field name="model">survey.user_input_line</field>
+            <field name="inherit_id" ref="survey.survey_user_input_line_form" />
+            <field name="arch" type="xml">
+                <field name="value_text" position="after">
+
+                    <!-- Employee Shown in this -->
+                    <field name="value_m2o" attrs="{'invisible': [('answer_type','!=','m2o')]}" />
+
+                    <!-- Image Show Field in the Answer -->
+                    <field name="img_sign" widget="image" attrs="{'invisible': [('answer_type','!=','sign')]}"/>
+
+                    <!-- Name Show Field in the Answer -->
+                    <label for="name" string="Name" attrs="{'invisible': [('answer_type','!=','name')]}"/>
+                    <div attrs="{'invisible': [('answer_type','!=','name')]}">
+                        <field name="first_name" /><br />
+                        <field name="middle_name" /><br />
+                        <field name="last_name" /><br />
+                    </div>
+
+                    <!-- Address Show Field in the Answer -->
+                    <label for="street" string="Address" attrs="{'invisible': [('answer_type','!=','address')]}"/>
+                    <div class="o_address_format" attrs="{'invisible': [('answer_type','!=','address')]}">
+                        <field name="street" placeholder="Street..." class="o_address_street"/>
+                        <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                        <field name="city" placeholder="City" class="o_address_city"/>
+                        <field name="state_id" class="o_address_state" placeholder="State" options="{'no_open': True}" context="{'country_id': country_id, 'zip': zip}"/>
+                        <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                        <field name="country_id" placeholder="Country" class="o_address_country" options="{'no_open': True, 'no_create': True}"/>
+                    </div>
+
+                </field>
+
+                <!-- Value text visible for the Other Answer Type -->
+                <field name="value_text" position="attributes">
+                    <attribute name="attrs">{'invisible': [('answer_type','not in',['tel', 'url','text', 'm2o'])]}</attribute>
+                </field>
+
+            </field>
+        </record>
+
+        <record id="survey_user_input_form_inherited" model="ir.ui.view">
+            <field name="name">survey.user_input.form.view</field>
+            <field name="model">survey.user_input</field>
+            <field name="inherit_id" ref="survey.survey_user_input_form" />
+            <field name="arch" type="xml">
+                <field name="user_input_line_ids" position="after">
+                    <field name="attachment_count" invisible="1" />
+                    <field name="attachment_ids" attrs="{'invisible':[('attachment_count','=',0)]}">
+                        <tree string="Attachments">
+                            <field name="name" />
+                            <field name="description" />
+                            <field name="mimetype" />
+                            <field name="type" />
+                            <field name="datas" filename="datas_fname" attrs="{'invisible':[('type','=','url')]}"/>
+                        </tree>
+                    </field>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>

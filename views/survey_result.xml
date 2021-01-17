@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="result_name" name="Name Field">
+            <table class="table table-hover table-condensed" t-att-id="'table_question_%d' % question.id">
+                <thead>
+                    <tr>
+                        <th class="col-xs-1">#</th>
+                        <th class="col-xs-4">First Name</th>
+                        <th class="col-xs-3">Middle Name</th>
+                        <th class="col-xs-4">Last Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="text_result" t-value="prepare_result"/>
+                    <tr t-foreach="text_result" t-as="user_input">
+                        <td ><a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)"><t t-esc="user_input_index + 1" /></a></td>
+                        <td>
+                            <a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)" t-field="user_input.first_name" /><br/>
+                        </td>
+                        <td>
+                            <a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)" t-field="user_input.middle_name" /><br/>
+                        </td>
+                        <td>
+                            <a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)" t-field="user_input.last_name" /><br/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+
+        <template id="result_m2o" name="Relation Result">
+            <div>
+                <ul class="nav nav-tabs hidden-print">
+                    <li class="active" t-if="question.type == 'm2o'">
+                        <a t-att-href="'#graph_question_%d' % question.id" data-toggle="tab">
+                            <i class="fa fa-bar-chart-o" /> Pie Chart
+                        </a>
+                    </li>
+                    <li>
+                        <a t-att-href="'#data_question_%d' % question.id" data-toggle="tab">
+                            <i class="fa fa-list-alt" /> Data
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active survey_graph" t-if="question.type == 'm2o'" t-att-id="'graph_question_%d' % question.id" t-att-data-question_id="question.id" data-graph_type="pie" t-att-graph-data="graph_data">
+                        <svg style="height:20em" />
+                    </div>
+                    <div class="tab-pane" t-att-id="'data_question_%d' % question.id">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th><span t-esc="question.model_id.name" /></th>
+                                    <th>Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="prepare_result['answers']" t-as="user_input">
+                                    <tr>
+                                        <td>
+                                            <span t-esc="user_input['text']" />
+                                        </td>
+                                        <td class="survey_answer">
+                                            <span t-esc="round(user_input['count']*100.0/(input_summary['answered'] or 1),2)" /> %
+                                            <span t-esc="user_input['count']" class="badge badge-primary">Vote</span>
+                                        </td>
+                                    </tr>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="result_view_sign" name="Signature Field">
+            <t t-set="text_result" t-value="prepare_result"/>
+            <t t-foreach="text_result" t-as="user_input">
+                <tr class="col-xs-3">
+                    <img alt="Digital Signature"
+                         style="width: 320px; height: 180px"
+                         t-attf-src="/web/content/survey.user_input_line/#{user_input.id}/img_sign"/>
+                </tr>
+            </t>
+        </template>
+
+        <template id="result_address" name="Address Field">
+            <t t-set="prefix" t-value="'%s_%s_%s' % (survey.id, page.id, question.id)" />
+
+            <div>
+                <!-- Tabs -->
+                <ul class="nav nav-tabs hidden-print">
+                    <li class="active" t-if="question.type == 'address'">
+                        <a t-att-href="'#graph_question_%d' % question.id" data-toggle="tab">
+                            <i class="fa fa-bar-chart-o" /> Pie Chart
+                        </a>
+                    </li>
+                    <li>
+                        <a t-att-href="'#data_question_%d' % question.id" data-toggle="tab">
+                            <i class="fa fa-list-alt" /> Data
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active survey_graph" t-if="question.type == 'address'" t-att-id="'graph_question_%d' % question.id" t-att-data-question_id="question.id" data-graph_type="pie" t-att-graph-data="graph_data">
+                        <svg style="height:20em" />
+                    </div>
+                    <div class="tab-pane" t-att-id="'data_question_%d' % question.id">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th class="col-xs-1">#</th>
+                                    <th class="col-xs-2">Street</th>
+                                    <th class="col-xs-2">Street2</th>
+                                    <th class="col-xs-2">City</th>
+                                    <th class="col-xs-2">State</th>
+                                    <th class="col-xs-2">Country</th>
+                                    <th class="col-xs-1">ZIP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="text_result" t-value="prepare_result"/>
+                                <tr t-foreach="text_result['addresses']" t-as="address">
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))"><t t-esc="address_index + 1" /></a><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('street')" /><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('street2')" /><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('city')" /><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('state')" /><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('country')" /><br/></td>
+                                    <td><a t-att-href="'%s/%s' % (address.get('print_url'), address.get('token'))" t-esc="address.get('zip')" /><br/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </template>
+
+        <template id="result_binary" name="Binary field">
+            <table class="table table-hover table-condensed" t-att-id="'table_question_%d' % question.id">
+                <thead>
+                    <tr>
+                        <th class="col-xs-1">#</th>
+                        <th class="col-xs-11">User Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="text_result" t-value="prepare_result"/>
+                    <tr t-foreach="text_result" t-as="user_input">
+                        <td><a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)"><t t-esc="user_input_index + 1" /></a></td>
+                        <td>
+                            <a t-att-href="'%s/%s' % (user_input.user_input_id.print_url, user_input.user_input_id.token)" t-field="user_input.attachment_id.name" /><br/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+
+        <template id="survey_result_inherited" inherit_id="survey.result" name="Survey Result">
+            <xpath expr="//div[@class='mt16']//t[5]//t[1]" position="after">
+                <t t-if="question.type == 'name'">
+                    <t t-call="vpcs_survey_fields.result_name" />
+                </t>
+                <t t-if="question.type == 'address'">
+                    <t t-call="vpcs_survey_fields.result_address" />
+                </t>
+                <t t-if="question.type == 'm2o'">
+                    <t t-call="vpcs_survey_fields.result_m2o" />
+                </t>
+                <t t-if="question.type == 'binary'">
+                    <t t-call="vpcs_survey_fields.result_binary" />
+                </t>
+                <t t-if="question.show_sign == True">
+                    <t t-if="question.type == 'sign'">
+                        <t t-call="vpcs_survey_fields.result_view_sign" />
+                    </t>
+                </t>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

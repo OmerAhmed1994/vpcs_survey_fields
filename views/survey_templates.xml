@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="vpcs_survey_assets" inherit_id="web.assets_common" name="Vpcs Survey assets">
+        <xpath expr="." position="inside">
+            <link href="/vpcs_survey_fields/static/src/css/custom.css" rel="stylesheet" type="text/css"/>
+            <script type="text/javascript" src="/vpcs_survey_fields/static/src/js/survey.js" />
+            <script type="text/javascript" src="/vpcs_survey_fields/static/lib/js/jSignature.js" />
+            <script type="text/javascript" src="/vpcs_survey_fields/static/src/js/signature.js"/>
+        </xpath>
+    </template>
+
+    <template id="m2o_field" name="Many2one field">
+        <t t-if="model_name">
+            <t t-set="Model" t-value="question.env[model_name].sudo(SUPERUSER_ID)" />
+            <t t-set="records" t-value="Model.search([])" />
+            <select class="form-control" t-att-name="prefix">
+                <option disabled="1" selected="1" value="">
+                    <t t-esc="default_placeholder or 'Choose...'" />
+                </option>
+                <t t-foreach="records" t-as="record">
+                    <option t-att-value="record.id">
+                        <t t-esc="record.display_name" />
+                    </option>
+                </t>
+            </select>
+        </t>
+    </template>
+
+    <template id="name_field" name="Address Field">
+        <div class="row">
+            <div class="col-sm-4 col-xs-12" t-att-id="prefix">
+                <input type="text" placeholder="First Name" class="form-control" t-att-name="prefix + '_first_name'"/>
+            </div>
+            <div class="col-sm-4 col-xs-12" t-att-id="prefix">
+                <input type="text" placeholder="Middle Name" class="form-control" t-att-name="prefix + '_middle_name'"/>
+            </div>
+            <div class="col-sm-4 col-xs-12" t-att-id="prefix">
+                <input type="text" placeholder="Last Name" class="form-control" t-att-name="prefix + '_last_name'"/>
+            </div>
+        </div>
+    </template>
+
+    <template id="view_sign_field" name="Signature Field">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default panel-signature">
+                    <div class="panel-body">
+                        <img alt="Digital Signature" t-att-name="prefix" style="width: 320px; height: 180px"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="binary_field" name="Binary field">
+        <input type="file" class="form-control" t-att-name="prefix"/>
+    </template>
+
+    <template id="sign_field" name="Signature Field">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default panel-signature">
+                    <div class="panel-heading nav">
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-success js_set_signature">Set</button>
+                            <button type="button" class="btn btn-danger js_reset_signature">Reset</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <input type="hidden" alt="img" t-att-name="prefix" style="display: none;"/>
+                        <div class="signature"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="address_field" name="Address Field">
+        <div class="row mt8">
+            <div class="col-md-12">
+                <input type="text" placeholder="Street" class="form-control" t-att-name="prefix + '_street'"/>
+            </div>
+        </div>
+        <div class="row mt8">
+            <div class="col-md-12">
+                <input type="text" placeholder="Street2" class="form-control" t-att-name="prefix + '_street2'"/>
+            </div>
+        </div>
+        <div class="row mt8">
+            <div class="col-sm-4">
+                <input type="text" placeholder="City" class="form-control" t-att-name="prefix + '_city'"/>
+            </div>
+            <div class="col-sm-4">
+                <t t-set="records" t-value="question.env['res.country.state'].search([])" />
+                <select class="form-control" t-att-name="prefix + '_state_id'">
+                    <option disabled="1" selected="1" value="">
+                        <t t-esc="'Choose State...'" />
+                    </option>
+                    <t t-foreach="records" t-as="record">
+                        <option t-att-value="record.id">
+                            <t t-esc="record.display_name" />
+                        </option>
+                    </t>
+                </select>
+            </div>
+            <div class="col-sm-4">
+                <input type="number" placeholder="Zip" class="form-control" t-att-name="prefix + '_zip'"/>
+            </div>
+        </div>
+        <div class="row mt8">
+            <div class="col-sm-12">
+                <t t-set="records" t-value="question.env['res.country'].search([])" />
+                <select class="form-control" t-att-name="prefix + '_country_id'">
+                    <option disabled="1" selected="1" value="">
+                        <t t-esc="'Choose Country...'" />
+                    </option>
+                    <t t-foreach="records" t-as="record">
+                        <option t-att-value="record.id">
+                            <t t-esc="record.display_name" />
+                        </option>
+                    </t>
+                </select>
+            </div>
+        </div>
+    </template>
+
+    <!-- Add To Survey Print -->
+    <template id="survey_print_inherited" inherit_id="survey.survey_print" name="Survey Print">
+        <xpath expr="//div[@class='js_question-wrapper']//h2" position="replace">
+            <h4>
+                <span t-field='question.question' />
+                <span t-if="question.constr_mandatory" class="text-danger">*</span>
+            </h4>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'js_errzone')]" position="before">
+            <t t-if="question.type == 'name'">
+                <t t-call="vpcs_survey_fields.name_field"/>
+            </t>
+            <t t-if="question.type == 'm2o'">
+                <t t-set="model_name" t-value="question.model_id.sudo(SUPERUSER_ID).model" />
+                <t t-call="vpcs_survey_fields.m2o_field"/>
+            </t>
+            <t t-if="question.type == 'binary'">
+                <t t-call="vpcs_survey_fields.binary_field"/>
+            </t>
+            <t t-if="question.type == 'address'">
+                <t t-call="vpcs_survey_fields.address_field"/>
+            </t>
+            <t t-if="question.type == 'sign'">
+                <t t-call="vpcs_survey_fields.view_sign_field"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="survey_page_inherited" inherit_id="survey.page" name="Survey Page: Add Fields">
+        <xpath expr="//form//div[@class='js_question-wrapper']//h2" position="replace">
+            <h4>
+                <span t-field='question.question' />
+                <span t-if="question.constr_mandatory" class="text-danger">*</span>
+            </h4>
+        </xpath>
+
+        <xpath expr="//div[contains(@class, 'text-muted oe_no_empty')]" position="replace">
+            <t t-if="question.description">
+                <div t-field='question.description' class="text-muted oe_no_empty"/>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[contains(@class, 'js_errzone')]" position="before">
+            <t t-if="question.type == 'm2o'">
+                <t t-set="model_name" t-value="question.model_id.sudo(SUPERUSER_ID).model" />
+                <t t-call="vpcs_survey_fields.m2o_field"/>
+            </t>
+            <t t-if="question.type == 'binary'">
+                <t t-call="vpcs_survey_fields.binary_field"/>
+            </t>
+            <t t-if="question.type == 'address'">
+                <t t-call="vpcs_survey_fields.address_field"/>
+            </t>
+            <t t-if="question.type == 'sign'">
+                <t t-call="vpcs_survey_fields.sign_field"/>
+            </t>
+            <t t-if="question.type == 'name'">
+                <t t-call="vpcs_survey_fields.name_field"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
